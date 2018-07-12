@@ -58,13 +58,29 @@ func main() {
 	r := gin.Default()
 
 	// r.Use(ApiMiddleware())
-	r.GET("/add", ApiMiddleware(), DbMiddleware(db), hello)
+	r.GET("/add", ApiMiddleware(), DbMiddleware(db), add)
+
+	r.GET("/look", ApiMiddleware(), DbMiddleware(db), look)
 
 	r.Run()
 	os.Exit(0)
 }
 
-func hello(c *gin.Context) {
+func look(c *gin.Context) {
+	db, ok := c.MustGet("dbConn").(*gorm.DB)
+	if !ok {
+		c.JSON(500, "wrong")
+	} else {
+		var product Product
+		db.First(&product)
+		log.Info(product)
+		c.JSON(200, gin.H{
+			"count": product,
+		})
+	}
+}
+
+func add(c *gin.Context) {
 	db, ok := c.MustGet("dbConn").(*gorm.DB)
 	if !ok {
 		c.JSON(500, "wrong")
